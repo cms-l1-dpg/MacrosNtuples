@@ -1,10 +1,11 @@
 eventselection='#gamma+jet'
-subfolder='/plotsL1Run3'
+subfolder='/plots_photonjet'
 channelname='PhotonJet'
 
 import yaml
 import drawplots
 import argparse
+import os
 
 def main():
     parser = argparse.ArgumentParser(
@@ -29,6 +30,8 @@ def main():
     if config['PU_plots']['make_histos']:
         bins = config['PU_plots']['nvtx_bins']
         suffixes += ['_nvtx{}to{}'.format(bins[i], bins[i+1]) for i in range(len(bins) - 1)]
+
+    os.makedirs(args.dir + subfolder, exist_ok=True)
 
     # NVTX distribution:
     

@@ -1,0 +1,11 @@
+executable              = wrapper.py
+arguments               = $(cmd)
+output                  = logs/$(ClusterId).$(ProcId).out
+error                   = logs/$(ClusterId).$(ProcId).err
+log                     = logs/$(ClusterId).$(ProcId).log
++JobFlavour             = espresso
+
+should_transfer_files = yes
+when_to_transfer_output = on_exit
+
+queue cmd from queue.txt

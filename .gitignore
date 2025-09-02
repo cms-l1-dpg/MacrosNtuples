@@ -1,0 +1,4 @@
+**/__pycache__/** 
+/automation/logs/**
+/automation/queue.txt
+**.log

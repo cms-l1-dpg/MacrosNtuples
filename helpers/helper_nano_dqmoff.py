@@ -196,9 +196,10 @@ def DQMOff_JetSelection(df):
     return false;
     ''')
 
-    df = df.Define('isGoodJet', 'Jet_jetId>=4')
-    df = df.Filter('Sum(isGoodJet)>0')
-    df = df.Define('isLead', 'isLeadJet(Jet_pt, isGoodJet)')
+    #df = df.Define('isGoodJet', 'Jet_jetId>=4')
+    #df = df.Filter('Sum(isGoodJet)>0')
+    df = df.Filter('Sum(passPFJetID)>0')
+    df = df.Define('isLead', 'isLeadJet(Jet_pt, passPFJetID)')
 
     df = df.Define('leadJetPt', 'Jet_pt[isLead]')
     df = df.Define('leadJetEta','Jet_eta[isLead]')
@@ -222,6 +223,25 @@ def DQMOff_EtSumSelection(df):
     df = df.Define('recoHTT', 'recoHTTandMHT[0]')
     df = df.Define('recoMHT', 'recoHTTandMHT[1]')
     df = df.Define('recoMHTPhi', 'recoHTTandMHT[2]')
+
+    return df
+
+def PassPFJetID(df):
+    # Jet ID based on energy fractions and multiplicities
+    df = df.Define("absJetEta", "abs(Jet_eta)")
+    df = df.Define("passPFJetID",
+        """
+        (absJetEta <= 2.6 && Jet_neHEF < 0.90 && Jet_neEmEF < 0.90 && Jet_nConstituents > 1 &&
+        Jet_muEF < 0.80 && Jet_chHEF > 0.01 && Jet_chMultiplicity > 0 && Jet_chEmEF < 0.80) ||
+
+        (absJetEta > 2.6 && absJetEta <= 2.7 && Jet_neHEF < 0.90 && Jet_neEmEF < 0.99 &&
+        Jet_muEF < 0.80 && Jet_chEmEF < 0.80) ||
+
+        (absJetEta > 2.7 && absJetEta <= 3.0 && Jet_neHEF < 0.9999) ||
+    
+        (absJetEta > 3.0 && absJetEta <= 5.0 && Jet_neEmEF < 0.90 && Jet_neMultiplicity > 2)
+        """
+    )
 
     return df
 

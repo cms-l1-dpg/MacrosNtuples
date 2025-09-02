@@ -121,7 +121,8 @@ def main():
     h.set_runnb_bins(df)
 
     #Define ETMHF
-    df = h.L1ETMHF(df)
+    #df = h.L1ETMHF(df)
+    
     if args.outputFile == '':
         args.outputFile = 'output_'+args.channel+'.root'
     out = ROOT.TFile(args.outputFile, "recreate")
@@ -134,7 +135,9 @@ def main():
     # add nvtx histo
     nvtx_histo = df.Histo1D(ROOT.RDF.TH1DModel("h_nvtx" , "Number of reco vertices;N_{vtx};Events"  ,    100, 0., 100.), "PV_npvs")
 
-        
+    # Define PF JetID
+    df = h.PassPFJetID(df)
+
     if args.channel == 'PhotonJet':
         df = h.SinglePhotonSelection(df) 
         

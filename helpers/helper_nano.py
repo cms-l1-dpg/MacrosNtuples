@@ -61,7 +61,7 @@ cout << "Photon Pt, Eta, Phi: " << (Photon_pt)[i]<<", "<<(Photon_eta)[i]<<", "<<
 }
 for(unsigned int i = 0;i< (Jet_pt).size();i++ ){
 cout << "jet Pt, Eta, Phi: " << (Jet_pt)[i]<<", "<<(Jet_eta)[i]<<", "<<(Jet_phi)[i]<<endl;
-cout << "jet PassID, MUEF, CEEF, CHEF: " << (_jetPassID)[i]<<", "<<(Jet_muEF)[i]<<", "<<(Jet_chEmEF)[i]<<", "<<  (Jet_chHEF)[i]<<endl;
+cout << "MUEF, CEEF, CHEF: " << (Jet_muEF)[i]<<", "<<(Jet_chEmEF)[i]<<", "<<  (Jet_chHEF)[i]<<endl;
 }
 
 for(unsigned int i = 0;i< (L1EG_pt).size();i++ ){
@@ -131,7 +131,7 @@ cout << "Photon Pt, Eta, Phi: " << (Photon_pt)[i]<<", "<<(Photon_eta)[i]<<", "<<
 }
 for(unsigned int i = 0;i< (Jet_pt).size();i++ ){
 cout << "jet Pt, Eta, Phi: " << (Jet_pt)[i]<<", "<<(Jet_eta)[i]<<", "<<(Jet_phi)[i]<<endl;
-cout << "jet PassID, MUEF, CEEF, CHEF, NHEF: " << (_jetPassID)[i]<<", "<<(Jet_muEF)[i]<<", "<<(Jet_chEmEF)[i]<<", "<<  (Jet_chHEF)[i]<<", "<<  (Jet_neHEF)[i]<<endl;
+cout << "MUEF, CEEF, CHEF, NHEF: " <<(Jet_muEF)[i]<<", "<<(Jet_chEmEF)[i]<<", "<<  (Jet_chHEF)[i]<<", "<<  (Jet_neHEF)[i]<<endl;
 cout << "jethfsigmaEtaEta jethfsigmaPhiPhi jethfcentralEtaStripSize "<< (Jet_hfsigmaEtaEta)[i]<<", "<<  (Jet_hfsigmaPhiPhi)[i]<<", "<<(Jet_hfcentralEtaStripSize)[i]<<endl;
 }
 
@@ -338,8 +338,9 @@ def DiJetSelection(df):
     '''
 
     df = df.Filter('HLT_AK8PFJet500&&PuppiMET_pt<300')
-    df = df.Define('isHighPtJet','Jet_jetId>=6&&Jet_pt>500&&Jet_muEF<0.5&&Jet_chEmEF<0.5&&Jet_neEmEF<0.8')
-    
+    #df = df.Define('isHighPtJet','Jet_jetId>=6&&Jet_pt>500&&Jet_muEF<0.5&&Jet_chEmEF<0.5&&Jet_neEmEF<0.8')
+    df = df.Define('isHighPtJet', 'passPFJetID && Jet_pt > 500 && Jet_muEF < 0.5 && Jet_chEmEF < 0.5 && Jet_neEmEF < 0.8')
+
     df = df.Filter('Sum(isHighPtJet)==2','=2 jets with pt>500 GeV')
     df = df.Filter('isHighPtJet[0]&&isHighPtJet[1]','First 2 jets are the cleaned jets')
     df = df.Define('highPtJet_Pt','Jet_pt[isHighPtJet]')
@@ -634,11 +635,30 @@ def L1ETMHF(df):
     
     return df
 
+def PassPFJetID(df):
+    # Jet ID based on energy fractions and multiplicities
+    df = df.Define("absJetEta", "abs(Jet_eta)")
+    df = df.Define("passPFJetID",
+        """
+        (absJetEta <= 2.6 && Jet_neHEF < 0.90 && Jet_neEmEF < 0.90 && Jet_nConstituents > 1 &&
+        Jet_muEF < 0.80 && Jet_chHEF > 0.01 && Jet_chMultiplicity > 0 && Jet_chEmEF < 0.80) ||
+
+        (absJetEta > 2.6 && absJetEta <= 2.7 && Jet_neHEF < 0.90 && Jet_neEmEF < 0.99 &&
+        Jet_muEF < 0.80 && Jet_chEmEF < 0.80) ||
+
+        (absJetEta > 2.7 && absJetEta <= 3.0 && Jet_neHEF < 0.9999) ||
+    
+        (absJetEta > 3.0 && absJetEta <= 5.0 && Jet_neEmEF < 0.90 && Jet_neMultiplicity > 2)
+        """
+    )
+
+    return df
 
 def CleanJets(df):
     #List of cleaned jets (noise cleaning + lepton/photon overlap removal)
-    df = df.Define('_jetPassID', 'Jet_jetId>=4')
-    df = df.Define('isCleanJet','_jetPassID&&Jet_pt>30&&Jet_muEF<0.5&&Jet_chEmEF<0.5')
+    #df = df.Define('_jetPassID', 'Jet_jetId>=4')
+    #df = df.Define('isCleanJet','_jetPassID&&Jet_pt>30&&Jet_muEF<0.5&&Jet_chEmEF<0.5')
+    df = df.Define('isCleanJet', 'passPFJetID && Jet_pt > 30 && Jet_muEF < 0.5 && Jet_chEmEF < 0.5')
     df = df.Define('cleanJet_Pt','Jet_pt[isCleanJet]')
     df = df.Define('cleanJet_Eta','Jet_eta[isCleanJet]')
     df = df.Define('cleanJet_Phi','Jet_phi[isCleanJet]')
@@ -731,8 +751,8 @@ def EtSum(df, suffix = ''):
     # Normal (MET only) trigger
     histos['HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_DiJet140_70_Mjj900'+suffix] = df.Filter('HLT_PFMETNoMu120_PFMHTNoMu120_IDTight&&vbf_selection').Histo1D(ROOT.RDF.TH1DModel('h_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_DiJet140_70_Mjj900'+suffix, '', len(jetmetpt_bins)-1, array('d',jetmetpt_bins)), 'MetNoMu')
 
-    # VBF (Met + jet) trigger
-    histos['HLT_DiJet110_35_Mjj650_PFMET110_DiJet140_70_Mjj900'+suffix] =  df.Filter('HLT_DiJet110_35_Mjj650_PFMET110&&vbf_selection').Histo1D(ROOT.RDF.TH1DModel('h_HLT_DiJet110_35_Mjj650_PFMET110_DiJet140_70_Mjj900'+suffix, '', len(jetmetpt_bins)-1, array('d',jetmetpt_bins)), 'MetNoMu')
+    ## VBF (Met + jet) trigger
+    # histos['HLT_DiJet110_35_Mjj650_PFMET110_DiJet140_70_Mjj900'+suffix] =  df.Filter('HLT_DiJet110_35_Mjj650_PFMET110&&vbf_selection').Histo1D(ROOT.RDF.TH1DModel('h_HLT_DiJet110_35_Mjj650_PFMET110_DiJet140_70_Mjj900'+suffix, '', len(jetmetpt_bins)-1, array('d',jetmetpt_bins)), 'MetNoMu')
 
     # VBF trigger
     if max(runnb_bins) > 367661:

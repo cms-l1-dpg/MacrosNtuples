@@ -1,0 +1,45 @@
+JetMET:
+    datasets:
+        - 'JetMET0'
+        - 'JetMET1'
+    eras:
+        - 'Run2025*'
+    scripts:
+        - 'python3 ../l1macros/performances_nano.py -i $INFILE -o $OUTDIR/all_DiJet.root -c DiJet'  
+    plotting:
+        - 'python3 ../plotting/make_DiJet_plots.py --dir $OUTDIR --config ../config_cards/full_DiJet.yaml'
+
+EGamma:
+    datasets:
+        - 'EGamma0'
+        - 'EGamma1'
+        - 'EGamma2'
+        - 'EGamma3'
+    eras: 
+        - 'Run2025*'
+    scripts:
+        - 'python3 ../l1macros/performances_nano.py -i $INFILE -o $OUTDIR/all_PhotonJet.root -c PhotonJet'
+        - 'python3 ../l1macros/performances_nano.py -i $INFILE -o $OUTDIR/all_ZToEE.root -c ZToEE'
+        - 'python3 ../l1macros/performances_nano_dqmoff.py -i $INFILE -o $OUTDIR/oug_zee_dqmoff.root -c ZToEEDQMOff'
+    plotting:
+        - 'python3 ../plotting/make_ZToEE_plots.py --dir $OUTDIR --config ../config_cards/full_ZToEE.yaml'
+        - 'python3 ../plotting/make_PhotonJet_plots.py --dir $OUTDIR --config ../config_cards/full_PhotonJet.yaml'
+
+Muon:
+    datasets:
+        - 'Muon0'
+        - 'Muon1'
+    eras:
+        - 'Run2025*'
+    scripts:
+        - 'python3 ../l1macros/performances_nano.py -i $INFILE -o $OUTDIR/all_ZToMuMu.root -c ZToMuMu'
+        - 'python3 ../l1macros/performances_nano.py -i $INFILE -o $OUTDIR/all_MuonJet.root -c MuonJet' #TODO not working
+        - 'python3 ../l1macros/performances_nano.py -i $INFILE -o $OUTDIR/all_ZToTauTau.root -c ZToTauTau'
+        - 'python3 ../l1macros/performances_nano_dqmoff.py -i $INFILE -o $OUTDIR/out_zmumu_dqmoffl.root -c ZToMuMuDQMOff'
+        - 'python3 ../l1macros/performances_nano_dqmoff.py -i $INFILE -o $OUTDIR/out_jets_dqmoff.root -c JetsDQMOff'
+        - 'python3 ../l1macros/performances_nano_dqmoff.py -i $INFILE -o $OUTDIR/out_ztautau_dqmoff.root -c ZToTauTauDQMOff'
+        - 'python3 ../l1macros/performances_nano_dqmoff.py -i $INFILE -o $OUTDIR/out_etsum_dqmoff.root -c EtSumDQMOff'
+    plotting:
+        - 'python3 ../plotting/make_ZToMuMu_plots.py --dir $OUTDIR --config ../config_cards/full_ZToMuMu.yaml'
+        - 'python3 ../plotting/make_ZToTauTau_plots.py --dir $OUTDIR --config ../config_cards/full_ZToTauTau.yaml'
+        - 'python3 ../plotting/make_MuonJet_plots.py --dir $OUTDIR --config ../config_cards/full_MuonJet.yaml'
